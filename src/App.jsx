@@ -2,6 +2,7 @@ import { useState, useRef } from 'react'
 import './App.css'
 
 const API_URL = `${import.meta.env.VITE_API_URL}/api/identify`
+const CORRECT_URL = `${import.meta.env.VITE_API_URL}/api/identify/correct`
 function formatDosage(raw) {
   if (!raw) return 'Unknown'
   return raw
@@ -105,8 +106,12 @@ export default function App() {
   const [backPreview, setBackPreview] = useState(null)
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState(null)
-  const [error, setError] = useState(null)   // string | true
+  const [error, setError] = useState(null)
   const [errorMsg, setErrorMsg] = useState(null)
+  const [correcting, setCorrecting] = useState(false)
+  const [correctInput, setCorrectInput] = useState('')
+  const [correctLoading, setCorrectLoading] = useState(false)
+  const [updated, setUpdated] = useState(false)
 
   function handleFront(f, url) {
     setFrontFile(f); setFrontPreview(url)
@@ -122,6 +127,39 @@ export default function App() {
     setFrontFile(null); setFrontPreview(null)
     setBackFile(null); setBackPreview(null)
     setResult(null); setError(null); setErrorMsg(null)
+    setCorrecting(false); setCorrectInput(''); setUpdated(false)
+  }
+
+  function startCorrect() {
+    setCorrectInput(result?.imprint || '')
+    setCorrecting(true)
+    setUpdated(false)
+  }
+
+  async function submitCorrection() {
+    if (!correctInput.trim()) return
+    setCorrectLoading(true)
+    try {
+      const res = await fetch(CORRECT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          corrected_imprint: correctInput.trim(),
+          shape: result?.shape || null,
+          color: result?.color || null,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`)
+      const improved = result?.drug_name === 'Unknown' && data.drug_name !== 'Unknown'
+      setResult(data)
+      setCorrecting(false)
+      if (improved) setUpdated(true)
+    } catch (err) {
+      setErrorMsg(err.message || null)
+    } finally {
+      setCorrectLoading(false)
+    }
   }
 
   async function identify() {
@@ -247,6 +285,47 @@ export default function App() {
               </div>
 
               <ConfidenceBadge level={result.confidence} />
+
+              {updated && (
+                <p className="correct-updated">✓ Updated</p>
+              )}
+
+              {!correcting && (
+                <button className="correct-link" onClick={startCorrect}>
+                  ✏️ Correct Imprint
+                </button>
+              )}
+
+              {correcting && (
+                <div className="correct-form">
+                  <label className="correct-label">Correct the imprint reading:</label>
+                  <input
+                    className="correct-input"
+                    type="text"
+                    value={correctInput}
+                    onChange={(e) => setCorrectInput(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && submitCorrection()}
+                    autoFocus
+                  />
+                  <div className="correct-btn-row">
+                    <button
+                      className="correct-btn correct-btn--primary"
+                      onClick={submitCorrection}
+                      disabled={correctLoading || !correctInput.trim()}
+                    >
+                      {correctLoading ? 'Checking...' : 'Recheck'}
+                    </button>
+                    <button
+                      className="correct-btn correct-btn--cancel"
+                      onClick={() => setCorrecting(false)}
+                      disabled={correctLoading}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                  {correctLoading && <div className="correct-spinner"><div className="spinner" /></div>}
+                </div>
+              )}
 
               <p className="disclaimer">{result.disclaimer}</p>
             </div>
