@@ -148,6 +148,46 @@
   margin: 0;
 }
 
+.upload-subtext {
+  font-size: 11px;
+  color: #94a3b8;
+  margin: 0 0 2px;
+}
+
+.upload-btn-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.capture-btn {
+  flex: 1;
+  padding: 7px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 8px;
+  border: 1px solid #1d6fce;
+  background: #1d6fce;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+.capture-btn:hover {
+  background: #1a5fb4;
+  border-color: #1a5fb4;
+}
+
+.capture-btn--secondary {
+  background: transparent;
+  color: #1d6fce;
+}
+
+.capture-btn--secondary:hover {
+  background: #eff6ff;
+}
+
 .hidden-input {
   display: none;
 }

@@ -30,8 +30,9 @@ const CameraIcon = () => (
   </svg>
 )
 
-function UploadZone({ label, optional, preview, onFile }) {
-  const inputRef = useRef(null)
+function UploadZone({ label, subtext, optional, preview, onFile }) {
+  const cameraRef = useRef(null)
+  const uploadRef = useRef(null)
 
   function handleFile(f) {
     if (!f) return
@@ -44,31 +45,52 @@ function UploadZone({ label, optional, preview, onFile }) {
         {label}
         {optional && <span className="optional-tag">Optional</span>}
       </div>
+      {subtext && <p className="upload-subtext">{subtext}</p>}
 
-      <div
-        className={`upload-area${preview ? ' has-preview' : ''}`}
-        onClick={() => inputRef.current.click()}
-        onDrop={(e) => { e.preventDefault(); handleFile(e.dataTransfer.files[0]) }}
-        onDragOver={(e) => e.preventDefault()}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => e.key === 'Enter' && inputRef.current.click()}
-        aria-label={`Upload ${label}`}
-      >
-        {preview ? (
+      {preview ? (
+        <div className="upload-area has-preview" onClick={() => cameraRef.current.click()}>
           <img src={preview} className="preview-img" alt={`${label} preview`} />
-        ) : (
+        </div>
+      ) : (
+        <div
+          className="upload-area"
+          onDrop={(e) => { e.preventDefault(); handleFile(e.dataTransfer.files[0]) }}
+          onDragOver={(e) => e.preventDefault()}
+        >
           <div className="upload-placeholder">
             <CameraIcon />
-            <p className="upload-hint">Drop or <span className="upload-link">browse</span></p>
+            <div className="upload-btn-row">
+              <button
+                type="button"
+                className="capture-btn"
+                onClick={() => cameraRef.current.click()}
+              >
+                📷 Take Photo
+              </button>
+              <button
+                type="button"
+                className="capture-btn capture-btn--secondary"
+                onClick={() => uploadRef.current.click()}
+              >
+                📁 Upload
+              </button>
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       <input
-        ref={inputRef}
+        ref={cameraRef}
         type="file"
-        accept="image/jpeg,image/png,image/webp"
+        accept="image/*"
+        capture="environment"
+        className="hidden-input"
+        onChange={(e) => handleFile(e.target.files[0])}
+      />
+      <input
+        ref={uploadRef}
+        type="file"
+        accept="image/*"
         className="hidden-input"
         onChange={(e) => handleFile(e.target.files[0])}
       />
@@ -136,14 +158,16 @@ export default function App() {
         {/* Upload zones */}
         <div className="upload-row">
           <UploadZone
-            label="Front of pill"
+            label="Front of Pill"
+            subtext="Take or upload a photo"
             optional={false}
             preview={frontPreview}
             onFile={handleFront}
           />
           <UploadZone
-            label="Back of pill"
-            optional={true}
+            label="Back of Pill (Optional)"
+            subtext="Take or upload a photo"
+            optional={false}
             preview={backPreview}
             onFile={handleBack}
           />
