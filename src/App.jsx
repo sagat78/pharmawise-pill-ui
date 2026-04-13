@@ -105,7 +105,8 @@ export default function App() {
   const [backPreview, setBackPreview] = useState(null)
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState(null)
-  const [error, setError] = useState(null)
+  const [error, setError] = useState(null)   // string | true
+  const [errorMsg, setErrorMsg] = useState(null)
 
   function handleFront(f, url) {
     setFrontFile(f); setFrontPreview(url)
@@ -120,7 +121,7 @@ export default function App() {
   function reset() {
     setFrontFile(null); setFrontPreview(null)
     setBackFile(null); setBackPreview(null)
-    setResult(null); setError(null)
+    setResult(null); setError(null); setErrorMsg(null)
   }
 
   async function identify() {
@@ -136,10 +137,11 @@ export default function App() {
 
       const res = await fetch(API_URL, { method: 'POST', body: form })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'API error')
+      if (!res.ok) throw new Error(data.error || data.detail || `HTTP ${res.status}`)
       setResult(data)
-    } catch {
+    } catch (err) {
       setError(true)
+      setErrorMsg(err.message || null)
     } finally {
       setLoading(false)
     }
@@ -197,7 +199,10 @@ export default function App() {
                 <path strokeLinecap="round" strokeLinejoin="round"
                   d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
               </svg>
-              <p>We couldn't identify this pill. Please try a clearer photo.</p>
+              <div>
+                <p>We couldn't identify this pill. Please try a clearer photo.</p>
+                {errorMsg && <p className="error-detail">{errorMsg}</p>}
+              </div>
             </div>
             <button className="try-again-btn" onClick={reset}>Try Again</button>
           </>
