@@ -2,8 +2,6 @@ import { useState, useRef } from 'react'
 import './App.css'
 
 const API_URL = `${import.meta.env.VITE_API_URL}/api/identify`
-const MAX_FILE_BYTES = 10 * 1024 * 1024 // 10 MB
-
 function formatDosage(raw) {
   if (!raw) return 'Unknown'
   return raw
@@ -37,10 +35,6 @@ function UploadZone({ label, optional, preview, onFile }) {
 
   function handleFile(f) {
     if (!f) return
-    if (f.size > MAX_FILE_BYTES) {
-      alert('Image too large. Please upload an image under 10MB.')
-      return
-    }
     onFile(f, URL.createObjectURL(f))
   }
 
