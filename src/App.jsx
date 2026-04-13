@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import './App.css'
 
-const API_URL = 'http://localhost:3001/api/identify'
+const API_URL = `${import.meta.env.VITE_API_URL}/api/identify`
 const MAX_FILE_BYTES = 10 * 1024 * 1024 // 10 MB
 
 function formatDosage(raw) {
